@@ -8,5 +8,7 @@ app = FastAPI(title="Digital Journal AI")
 
 @app.get("/")
 def root():
-    return {"status": "Journal engine running"}
-
+    return {
+        "status": "Journal engine ready",
+        "mode": "suggest-only"
+    }
