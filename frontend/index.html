@@ -1,1 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Digital Journal AI</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-light">
+
+  <h1>Trade Journal</h1>
+
+  <form id="journalForm">
+    <input placeholder="Pair (e.g. XAUUSD)" />
+    <input placeholder="Session (London / NY)" />
+
+    <input placeholder="Entry price" />
+    <input placeholder="Stop loss" />
+    <input placeholder="Take profit" />
+
+    <select>
+      <option>Emotion (select)</option>
+      <option>Calm</option>
+      <option>Fear</option>
+      <option>FOMO</option>
+    </select>
+
+    <input placeholder="Custom emotion (optional)" />
+
+    <select>
+      <option>Reason (select)</option>
+      <option>Breakout</option>
+      <option>Liquidity sweep</option>
+      <option>Retest</option>
+    </select>
+
+    <input placeholder="Custom reason (optional)" />
+
+    <button type="submit">Save Trade</button>
+  </form>
+
+  <script src="app.js"></script>
+</body>
+</html>
 
