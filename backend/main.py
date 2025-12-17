@@ -1,14 +1,8 @@
-from fastapi import FastAPI
-from database import engine
-from models import Base
-
-Base.metadata.create_all(bind=engine)
-
-app = FastAPI(title="Digital Journal AI")
-
-@app.get("/")
-def root():
+@app.get("/monthly-report/{year}/{month}")
+def monthly_report(year: int, month: int, db: Session = Depends(get_db)):
+    report = generate_monthly_report(db, year, month)
+    message = generate_tone_message(report)
     return {
-        "status": "Journal engine ready",
-        "mode": "suggest-only"
+        "report": report,
+        "message": message
     }
