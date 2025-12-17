@@ -1,7 +1,6 @@
 from collections import Counter
 from sqlalchemy.orm import Session
 from models import TradeEntry
-from datetime import datetime
 
 def generate_monthly_report(db: Session, year: int, month: int):
     trades = db.query(TradeEntry).filter(
@@ -12,6 +11,9 @@ def generate_monthly_report(db: Session, year: int, month: int):
     if not trades:
         return {
             "summary": "No trades recorded this month.",
+            "charts": {},
+            "strengths": [],
+            "weaknesses": [],
             "tone": "neutral"
         }
 
@@ -19,31 +21,57 @@ def generate_monthly_report(db: Session, year: int, month: int):
     wins = len([t for t in trades if t.result == "win"])
     losses = len([t for t in trades if t.result == "loss"])
 
-    emotions = Counter([t.emotion for t in trades if t.emotion])
-    reasons = Counter([t.reason for t in trades if t.reason])
+    emotions = [t.emotion for t in trades if t.emotion]
+    reasons = [t.reason for t in trades if t.reason]
 
-    top_emotion = emotions.most_common(1)
-    top_reason = reasons.most_common(1)
+    emotion_count = Counter(emotions)
+    reason_count = Counter(reasons)
 
-    discipline_score = max(0, 100 - (losses * 5))
-    consistency_score = int((wins / total) * 100)
+    # Chart-ready data
+    charts = {
+        "win_loss": {
+            "labels": ["Wins", "Losses"],
+            "data": [wins, losses]
+        },
+        "emotions": {
+            "labels": list(emotion_count.keys()),
+            "data": list(emotion_count.values())
+        },
+        "reasons": {
+            "labels": list(reason_count.keys()),
+            "data": list(reason_count.values())
+        }
+    }
+
+    strengths = []
+    weaknesses = []
+
+    for emotion, count in emotion_count.items():
+        emotion_losses = len([
+            t for t in trades if t.emotion == emotion and t.result == "loss"
+        ])
+        if emotion_losses == 0:
+            strengths.append(f"Strong emotional control when {emotion}")
+        elif emotion_losses > count / 2:
+            weaknesses.append(f"Emotion '{emotion}' often leads to losses")
+
+    for reason, count in reason_count.items():
+        reason_losses = len([
+            t for t in trades if t.reason == reason and t.result == "loss"
+        ])
+        if reason_losses > count / 2:
+            weaknesses.append(f"Strategy '{reason}' underperformed")
 
     tone = "supportive"
     if losses > wins:
         tone = "neutral"
-    if losses > wins * 1.5:
+    if losses >= wins * 1.5:
         tone = "stern"
 
-    report = {
-        "total_trades": total,
-        "wins": wins,
-        "losses": losses,
-        "top_emotion": top_emotion,
-        "top_reason": top_reason,
-        "discipline_score": discipline_score,
-        "consistency_score": consistency_score,
+    return {
+        "summary": f"{total} trades analysed",
+        "charts": charts,
+        "strengths": strengths,
+        "weaknesses": weaknesses,
         "tone": tone
     }
-
-    return report
-
